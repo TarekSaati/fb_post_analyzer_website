@@ -36,7 +36,6 @@ pyzmq
 scikit-learn
 scipy
 six
-sklearn
 stack-data
 threadpoolctl
 tornado
