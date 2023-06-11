@@ -2,7 +2,6 @@ from pydantic import BaseSettings
 
 # configure env vars to match a schema
 class Settings(BaseSettings):
-    dataset_path: str
     db_host: str
     db_port: str
     db_name: str
