@@ -1,6 +1,6 @@
 asttokens
 backcall
-coloram
+colorama
 comm
 contourpy
 cycler
