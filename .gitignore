@@ -1,0 +1,6 @@
+backend/__pycache__
+backend/.env
+backend/app/__pycache__
+backend/app/routes/__pycache__
+backend/app/plottests.ipynb
+frontend/node_modules
