@@ -18,25 +18,29 @@ import {
 } from "@chakra-ui/react";
 
 const PostsContext = React.createContext({
-  posts: [], token: '', fetchPosts: () => {}
+  posts: [], token: '', setPosts: () => {}
 })
 
-function Topic({token}) {
+function Topic() {
   const [topic, setTopic] = React.useState("")
-  const {fetchPosts} = React.useContext(PostsContext)
+  const {token, setPosts} = React.useContext(PostsContext)
 
   const handleInput = event  => {
     setTopic(event.target.value)
   }
 
-  const handleSubmit = () => {
-    const headers = { 'Authorization': {token},
-    "Content-Type": "application/json" };
-    fetch("https://fastapi-tarek.onrender.com:8000/home/", {
-      method: "POST",
-      headers: { headers },
-      body: JSON.stringify(topic)
-    }).then(fetchPosts)
+  const handleSubmit = async () => {
+    let options = {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({'topic': topic})
+  }
+    const data = await fetch("https://fastapi-tarek.onrender.com/home/", options)
+    const posts = await data.json()
+    setPosts(posts)  
   }
 
   return (
@@ -56,18 +60,31 @@ function Topic({token}) {
 function UpdatePost({oldTopic, id}) {
   const {isOpen, onOpen, onClose} = useDisclosure()
   const [topic, setTopic] = useState(oldTopic)
-  const {token, fetchPosts} = React.useContext(PostsContext)
+  const {token, setPosts} = React.useContext(PostsContext)
 
   const updatePost = async () => {
-    const headers = { 'Authorization': {token},
-    "Content-Type": "application/json" };
-    await fetch(`https://fastapi-tarek.onrender.com:8000/home/${id}`, {
-      method: "PUT",
-      headers: { headers },
+    let options = {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({'index': id, 'topic': topic})
-    })
-    onClose()
-    await fetchPosts()
+  }
+  await fetch(`https://fastapi-tarek.onrender.com/home/${id}`, options)
+  options = {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({'topic': topic})
+}
+  const data = await fetch("https://fastapi-tarek.onrender.com/home/", options)
+  const posts = await data.json()
+  setPosts(posts)  
+  onClose()
+    
   }
 
   return (
@@ -118,21 +135,27 @@ function PostHelper({content, time, pagename, topic, id}) {
 
 export default function Postlist({token}) {
   const [posts, setPosts] = useState([])
-  const fetchPosts = async () => {
-    const headers = { 'Authorization': `Bearer ${token}` };
-    const response = await fetch("https://fastapi-tarek.onrender.com:8000/home/", {headers})
-    const data = await response.json()
-    setPosts(data)
-    console.log(token)
-  }
+
+  // const fetchPosts = async () => {
+  //   let options = {
+  //     method: 'GET',
+  //     headers: {
+  //       'Authorization': `Bearer ${token}`,  
+  //       'Content-Type': 'application/json'
+  //     },
+  // }
+  //   const response = await fetch("https://fastapi-tarek.onrender.com/home/", options)
+  //   const data = await response.json()
+  //   setPosts(data)
+  // }
  
   return (
-    <PostsContext.Provider value={{posts, token, fetchPosts}}>
-      <Topic token={token}/>
+    <PostsContext.Provider value={{posts, token, setPosts}}>
+      <Topic />
       <Stack spacing={5}>
         {
-          posts.map((post) => (
-            <PostHelper content={post.Post.text} time={post.Post.time} pagename={post.Post.pagename} id={post.Post.index} topic={post.Post.topic} />
+          posts.length > 0 && (posts.map((post) => (
+            <PostHelper content={post.text} time={post.time} pagename={post.pagename} id={post.index} topic={post.topic} />)
           ))
         }
       </Stack>

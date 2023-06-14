@@ -20,7 +20,7 @@ def get_posts(db: Session = Depends(get_db),
                  current_user: int = Depends(oauth2.get_current_user)):
     
     results = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.index, isouter=True).group_by(models.Post.index).all()
-    
+    print(results)
     results = list ( map (lambda x : x._mapping, results) )
     return results
 

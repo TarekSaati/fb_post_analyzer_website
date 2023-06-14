@@ -31,12 +31,14 @@ function Login() {
   const [password, setPassword] = React.useState('')
 
   const loginUser = async () => {  
+    console.log('sent')
     let formData = new FormData();
     formData.append('username', email);
     formData.append('password', password);
-    const ret = await fetch(`http://localhost:8000/login/`, {method: "POST", body: formData})
+    const ret = await fetch(`https://fastapi-tarek.onrender.com/login/`, {method: "POST", body: formData})
     const token_data = await ret.json()
     setToken(token_data.access_token)
+    
     onClose()
   }
 
@@ -98,12 +100,11 @@ function Register() {
       'lastName': lastname,
       'password': password
     }
-    const ret = await fetch("https://fastapi-tarek.onrender.com:8000/users/", {
+    await fetch("https://fastapi-tarek.onrender.com/users/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(user_info)
     })
-    const ret_email = await ret.json().email
     alert(`User ${firstname} was registered successfully!`)
     onClose()
   }
@@ -214,7 +215,7 @@ function App() {
           <Header />
           <Link to='/posts'>Show Posts by Topic</Link>
           <Routes>
-            <Route path='/posts' element={<Postlist token={token}/>}></Route>
+            <Route path='/posts' element={<Postlist key={0} token={token}/>}></Route>
           </Routes>
         </TokenContext.Provider>
       </ChakraProvider>
