@@ -32,7 +32,7 @@ function Topic({token}) {
   const handleSubmit = () => {
     const headers = { 'Authorization': {token},
     "Content-Type": "application/json" };
-    fetch("http://localhost:8000/home/", {
+    fetch("https://fastapi-tarek.onrender.com:8000/home/", {
       method: "POST",
       headers: { headers },
       body: JSON.stringify(topic)
@@ -61,7 +61,7 @@ function UpdatePost({oldTopic, id}) {
   const updatePost = async () => {
     const headers = { 'Authorization': {token},
     "Content-Type": "application/json" };
-    await fetch(`http://localhost:8000/home/${id}`, {
+    await fetch(`https://fastapi-tarek.onrender.com:8000/home/${id}`, {
       method: "PUT",
       headers: { headers },
       body: JSON.stringify({'index': id, 'topic': topic})
@@ -120,7 +120,7 @@ export default function Postlist({token}) {
   const [posts, setPosts] = useState([])
   const fetchPosts = async () => {
     const headers = { 'Authorization': `Bearer ${token}` };
-    const response = await fetch("http://localhost:8000/home/", {headers})
+    const response = await fetch("https://fastapi-tarek.onrender.com:8000/home/", {headers})
     const data = await response.json()
     setPosts(data)
     console.log(token)

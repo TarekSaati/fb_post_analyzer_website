@@ -98,7 +98,7 @@ function Register() {
       'lastName': lastname,
       'password': password
     }
-    const ret = await fetch("http://localhost:8000/users/", {
+    const ret = await fetch("https://fastapi-tarek.onrender.com:8000/users/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(user_info)
