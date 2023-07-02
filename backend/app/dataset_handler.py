@@ -1,8 +1,8 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
-from classifiers import MyADABOOST, MyANN, MyRF, MySVC
-from preprocessing import process_dataset
-from config import settings
+from .classifiers import MyADABOOST, MyANN, MyRF, MySVC
+from .preprocessing import process_dataset
+from .config import settings
 from matplotlib import pyplot as plt
 from sqlalchemy import create_engine
 import pandas as pd
