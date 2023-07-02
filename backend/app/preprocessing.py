@@ -1,7 +1,6 @@
 
 from sklearn.model_selection import train_test_split
-from sklearn.pipeline import FunctionTransformer
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler, FunctionTransformer
 import pandas as pd
 import numpy as np
 import json
