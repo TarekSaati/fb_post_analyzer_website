@@ -1,82 +1,62 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
-from classifiers import Classifier
-from preprocessing import get_fb_dataset, process_dataset
+from classifiers import MyADABOOST, MyANN, MyRF, MySVC
+from preprocessing import process_dataset
 from config import settings
 from matplotlib import pyplot as plt
+from sqlalchemy import create_engine
+import pandas as pd
 
-# getting our arabic facebook dataset as pandas DataFrame
-ds = get_fb_dataset(settings.dataset_path)
+def prepare_classifier(clfName: str, seed: int):
+    # importing the arabic facebook dataset from database as pandas DataFrame
+    DATABASE_URL = f'postgresql://{settings.db_username}:{settings.db_password}@{settings.db_host}/{settings.db_name}'
+    engine = create_engine(DATABASE_URL)
+    df = pd.read_sql_table('posts',
+                            engine,
+                            columns=[
+                                'likes', 'comments', 'shares',
+                                'value', 'time', 'timestamp',
+                                'topic', 'pagename'
+                                ],
+                            index_col='index')
 
-X, y = process_dataset(ds, test_ratio=0.1)
+    X, y = process_dataset(df, test_ratio=0.1)
 
-# splitting dataset
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.1, random_state=321)
-
-# create a classifier class instance
-clf = Classifier(X_train, X_test, y_train, y_test)
-
-# plot out results
-fig, axes = plt.subplots(nrows=1, ncols=3)
-width = .25
-max_iters_for_avg = 10
-
-# params to test classifiers
-n_trees = [3, 5, 7, 10, 20, 50]
-max_depths = [10, 20, 50]
-n_estimators = [5, 10, 15, 25, 50]
-RF_scores = np.zeros((len(max_depths), len(n_trees)), dtype=np.float32)
-
-
-for _ in range(max_iters_for_avg):
-    seed = int(np.random.choice(100, 1))
+    # train-test splitting 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.1, random_state=seed)
 
-    for i, d in enumerate(max_depths): 
-        for j, n in enumerate(n_trees):
-            RF_scores[i, j] += (1/max_iters_for_avg) * clf.apply_randomforest(n_trees=n, max_depth=d)
+    # create a classifier class instance
+    if clfName == 'svc':
+        opt = MySVC(X_train, X_test, y_train, y_test, isOptimal=True)
+    elif clfName == 'rf':
+        opt = MyRF(X_train, X_test, y_train, y_test, isOptimal=True)
+    elif clfName == 'ann':
+        opt = MyANN(X_train, X_test, y_train, y_test, isOptimal=True)
+    else:
+        opt = MyADABOOST(X_train, X_test, y_train, y_test, isOptimal=True)
+    
+    return opt.clf
 
-axes[0].bar(np.linspace(1,len(n_trees),len(n_trees))-width, RF_scores[0, :], width=width)
-axes[0].bar(np.linspace(1,len(n_trees),len(n_trees)), RF_scores[1, :], width=width)
-axes[0].bar(np.linspace(1,len(n_trees),len(n_trees))+width, RF_scores[2, :], width=width)
-axes[0].set_xticks(ticks=np.linspace(1,len(n_trees),len(n_trees)), labels=n_trees)
-'''
-n_hiddens = [3, 5, 7, 9]
-n_nodes = [5]
-max_iters = [500, 1000, 5000]
-ANN_scores = np.zeros((len(max_iters), len(n_hiddens)), dtype=np.float32)
-for _ in range(max_iters_for_avg):
-    seed = int(np.random.choice(100, 1))
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.1, random_state=seed)
+def plot_clf_stats(clfName, **kwargs):
+    # plot out results
+    width = .25
+    max_iters_for_avg = 10
+    params = kwargs.values()
 
-    for i, t in enumerate(max_iters):
-        for j, n in enumerate(n_hiddens):
-            ANN_scores[i, j] += (1/max_iters_for_avg) * clf.apply_neuralnet(hidden_list=n*n_nodes, max_iters=t)
+    scores = np.zeros((len(params[1]), len(params[0])), dtype=np.float32)
 
-axes[1].bar(np.linspace(1,len(n_hiddens),len(n_hiddens))-width, ANN_scores[0, :], width=width)
-axes[1].bar(np.linspace(1,len(n_hiddens),len(n_hiddens)), ANN_scores[1, :], width=width)
-axes[1].bar(np.linspace(1,len(n_hiddens),len(n_hiddens))+width, ANN_scores[2, :], width=width)
-axes[1].set_xticks(ticks=np.linspace(1,len(n_hiddens),len(n_hiddens)), labels=n_hiddens)
-'''
-gammas = [.1, .5, 1, 5, 10]
-Cs = [.2, 1, 5]
-max_iters = [500, 100, 5000]
-svc_scores = np.zeros((len(Cs), len(gammas)), dtype=np.float32)
-for _ in range(max_iters_for_avg):
-    seed = int(np.random.choice(100, 1))
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.1, random_state=seed)
+    for _ in range(max_iters_for_avg):
+        seed = int(np.random.choice(100, 1))
+        clf = prepare_classifier(clfName=clfName, seed=seed)
 
-    for i, C in enumerate(Cs):
-        for j, g in enumerate(gammas):
-            svc_scores[i, j] += (1/max_iters_for_avg) * clf.apply_svc(gamma=g, c=C)
+        for i, d in enumerate(params[1]): 
+            for j, n in enumerate(params[0]):
+                scores[i, j] += (1/max_iters_for_avg) * clf.eval(n, d)
 
-axes[2].bar(np.linspace(1,len(gammas),len(gammas))-width, svc_scores[0, :], width=width)
-axes[2].bar(np.linspace(1,len(gammas),len(gammas)), svc_scores[1, :], width=width)
-axes[2].bar(np.linspace(1,len(gammas),len(gammas))+width, svc_scores[2, :], width=width)
-axes[2].set_xticks(ticks=np.linspace(1,len(gammas),len(gammas)), labels=gammas)
-
-plt.show()
-'''
-samme_score = clf.apply_adaboost_sammer(n_estimators=5)
-print('samme accuracy = ', samme_score)
-'''
+    plt.bar(np.linspace(1,len(params[0]),len(params[0]))-width, scores[0, :], width=width)
+    plt.bar(np.linspace(1,len(params[0]),len(params[0])), scores[1, :], width=width)
+    plt.bar(np.linspace(1,len(params[0]),len(params[0]))+width, scores[2, :], width=width)
+    plt.xticks(ticks=np.linspace(1,len(params[0]),len(params[0])), labels=params[0])
+    
+    plt.show()
+    

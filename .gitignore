@@ -3,4 +3,5 @@ backend/.env
 backend/app/__pycache__
 backend/app/routes/__pycache__
 backend/app/plottests.ipynb
+backend/app/mlalgorithms/numpy_tests.ipynb
 frontend/node_modules

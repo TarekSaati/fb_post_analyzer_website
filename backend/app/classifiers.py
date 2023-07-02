@@ -1,50 +1,94 @@
 
 from sklearn.metrics import accuracy_score
-from mlalgorithms.random_forest import CustomRandomForest
-from mlalgorithms.lda import LDA
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
+
+# RF
+n_trees = [3, 5, 7, 10, 20, 50]
+max_depths = [10, 20, 50]
+n_estimators = [5, 10, 15, 25, 50]
+# ANNs
+n_hiddens = [3, 5, 7, 9]
+n_nodes = [5]
+max_iters = [500, 1000, 5000]
+#SVC
+gammas = [.1, .5, 1, 5, 10]
+Cs = [.2, 1, 5]
+max_iters = [500, 100, 5000]
 
 class Classifier:
     def __init__(self, X_train, X_test, y_train, y_test):
         self.X_train=X_train
         self.y_train=y_train
         self.X_test=X_test
-        self.y_test=y_test
+        self.y_test=y_test    
+        self.clf = None
 
-    def apply_svc(self, c=1.0, gamma=1):
-        clf = SVC(kernel='rbf', gamma=gamma, C=c)
-        clf.fit(self.X_train, self.y_train)
-        y_pred = clf.predict(self.X_test)
-        return accuracy_score(self.y_test, y_pred)
+    def eval(self):
+        raise NotImplementedError()
     
-    def apply_adaboost_sammer(self, n_estimators):
-        clf = AdaBoostClassifier(n_estimators=n_estimators)
-        clf.fit(self.X_train, self.y_train)
-        y_pred = clf.predict(self.X_test)
-        # return accuracy_score(self.y_test, y_pred)
-        return  clf.score(self.X_train, self.y_train), clf.score(self.X_test, self.y_test)
+    def predict(self):
+        raise NotImplementedError()
 
-    def apply_customrandomforest(self, n_trees=7, min_samples_per_node=4, max_depth=10):
-        clf = CustomRandomForest(n_trees=n_trees, min_samples_per_node=min_samples_per_node, max_depth=max_depth, n_feats=3)
-        clf.fit(self.X_train, self.y_train)
-        y_pred = clf.predict(self.X_test)
+class MySVC(Classifier):
+
+    def __init__(self, X_train, X_test, y_train, y_test, *args, isOptimal=False):
+        super().__init__(X_train, X_test, y_train, y_test)
+        self._optGamma = 1.0
+        self._optC = 1.0
+        self.clf = SVC(kernel='rbf',
+                    gamma=self._optGamma if isOptimal else args[0],
+                    C=self._optC if isOptimal else args[1]).fit(X_train, y_train)
+    
+    def eval(self):
+        y_pred = self.clf.predict(self.X_test)
+        return accuracy_score(self.y_test, y_pred)
+    def predict(self, X):
+        return self.clf.predict(X)
+    
+class MyRF(Classifier):
+
+    def __init__(self, X_train, X_test, y_train, y_test, *args, isOptimal=False):
+        super().__init__(X_train, X_test, y_train, y_test)
+        self.optNtrees = 7
+        self.optDepth = 10
+        self.clf = RandomForestClassifier(n_estimators=self.optNtrees if isOptimal else args[0],
+        max_depth=self.optDepth if isOptimal else args[1],
+        min_samples_split=4).fit(X_train, y_train)
+
+    def eval(self):
+        y_pred = self.clf.predict(self.X_test)
+        return accuracy_score(self.y_test, y_pred)
+    def predict(self, X):
+        return self.clf.predict(X)
+    
+class MyADABOOST(Classifier):
+
+    def __init__(self, X_train, X_test, y_train, y_test, *args, isOptimal=False):
+        super().__init__(X_train, X_test, y_train, y_test)
+        self.optNestimators = 10
+        self.clf = AdaBoostClassifier(n_estimators=self.optNestimators if isOptimal else args[0]).fit(X_train, y_train)
+    
+    def eval(self):
+        y_pred = self.clf.predict(self.X_test)
         return accuracy_score(self.y_test, y_pred)
     
-    def apply_randomforest(self, n_trees=7, min_samples_per_node=4, max_depth=10):
-        clf = RandomForestClassifier(n_estimators=n_trees, max_depth=max_depth, min_samples_split=min_samples_per_node)
-        clf.fit(self.X_train, self.y_train)
-        y_pred = clf.predict(self.X_test)
+    def predict(self, X):
+        return self.clf.predict(X)
+    
+class MyANN(Classifier):
+
+    def __init__(self, X_train, X_test, y_train, y_test, *args, isOptimal=False):
+        super().__init__(X_train, X_test, y_train, y_test)
+        self.optHidden = [5] * 7
+        self.optIters = 1000
+        self.clf = MLPClassifier(hidden_layer_sizes=self.optHidden if isOptimal else ([5] * args[0]),
+        max_iter=self.optIters if isOptimal else args[1]).fit(X_train, y_train)
+
+    def eval(self):
+        y_pred = self.clf.predict(self.X_test)
         return accuracy_score(self.y_test, y_pred)
     
-    def apply_neuralnet(self, hidden_list, max_iters):
-        clf = MLPClassifier(hidden_layer_sizes=hidden_list, max_iter=max_iters)
-        clf.fit(self.X_train, self.y_train)
-        y_pred = clf.predict(self.X_test)
-        return accuracy_score(self.y_test, y_pred)
-    
-    def apply_lda(self, n_components=2):
-        lda = LDA(n_components)
-        lda.fit(self.X_train, self.y_train)
-        return lda.transform(self.X_train)
+    def predict(self, X):
+        return self.clf.predict(X)

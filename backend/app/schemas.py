@@ -35,7 +35,7 @@ class CreateUser(BaseUser):
 
 class Topic(BaseModel):
     topic: str
-
+    estimated: bool
 
 class UpdateUser(BaseUser):
     firstName: str

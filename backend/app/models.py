@@ -15,6 +15,7 @@ class Post(Base):
     timestamp = Column(DOUBLE_PRECISION, nullable=False)
     pagename = Column(Text, nullable=False)
     topic = Column(Text, nullable=True)
+    estimtopic = Column(Integer, nullable=True)
 
 
 class User(Base):

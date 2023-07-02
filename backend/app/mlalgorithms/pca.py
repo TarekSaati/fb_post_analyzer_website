@@ -10,7 +10,7 @@ class PCA:
     def fit(self, X):
         # need mean
         self.mean = np.mean(X, axis=0)
-        # calc auto-ovarience with np.cov feats*samples
+        # calc auto-covarience with np.cov feats*samples
         cov = np.cov((X - self.mean).T)
         # calc eignvectors and eigenvalues
         eignvals, eignvects = np.linalg.eig(cov)

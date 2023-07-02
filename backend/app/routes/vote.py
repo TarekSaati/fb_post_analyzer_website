@@ -27,6 +27,7 @@ def vote(vote: schemas.Vote, db: Session = Depends(get_db),
         if not existing_vote.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='no vote')
         existing_vote.delete(synchronize_session=False)
+
     db.commit()
     return {"message": "successfully voted"}
 

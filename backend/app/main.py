@@ -24,5 +24,5 @@ app.include_router(user.router)
 
 
 @app.get('/')
-def to_docs():
+def redirect():
     return RedirectResponse('/home', status_code=status.HTTP_307_TEMPORARY_REDIRECT)
