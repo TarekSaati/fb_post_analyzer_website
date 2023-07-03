@@ -18,6 +18,7 @@ router = APIRouter(prefix='/home', tags=["HomePage"])
 
 topics = ['Bussiness', 'Education', 'Entertainment', 'News', 'Football']
 def estimate_topics():
+    global engine
     df = pd.read_sql_table('posts',
                             engine,
                             columns=[
