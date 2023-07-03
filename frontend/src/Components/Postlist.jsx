@@ -36,7 +36,7 @@ function Topic() {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({'topic': topic})
+      body: JSON.stringify({'topic': topic, 'estimated': true})
   }
     const data = await fetch("https://fastapi-tarek.onrender.com/home/", options)
     const posts = await data.json()
