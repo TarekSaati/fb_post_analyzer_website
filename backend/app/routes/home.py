@@ -20,7 +20,8 @@ topics = ['Bussiness', 'Education', 'Entertainment', 'News', 'Football']
 def estimate_topics():
     global engine
     df = pd.read_sql_table('posts',
-                            engine,
+                            con=engine,
+                            schema=None,
                             columns=[
                                 'likes', 'comments', 'shares',
                                 'value', 'time', 'timestamp',
