@@ -35,10 +35,9 @@ class MySVC(Classifier):
 
     def __init__(self, X_train, X_test, y_train, y_test, *args, isOptimal=False):
         super().__init__(X_train, X_test, y_train, y_test)
-        self._optGamma = 1.0
         self._optC = 1.0
         self.clf = SVC(kernel='rbf',
-                    gamma=self._optGamma if isOptimal else args[0],
+                    gamma='scale' if isOptimal else args[0],
                     C=self._optC if isOptimal else args[1]).fit(X_train, y_train)
     
     def eval(self):
